@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#172554">
+<title>Math Master — Free Math Practice</title>
+<style>
+:root{color-scheme:light;--ink:#172554;--muted:#64748b;--line:#dbe3ef;--paper:#fff;--soft:#f1f5f9;--blue:#2563eb;--green:#15803d;--red:#b91c1c}
+*{box-sizing:border-box}body{margin:0;background:#eef3fb;color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:760px;margin:auto;padding:18px 14px 36px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+h1{font-size:clamp(25px,6vw,34px);margin:0}.sub{color:var(--muted);font-size:14px}.score{background:white;border:1px solid var(--line);border-radius:14px;padding:10px 15px;text-align:center;min-width:88px}
+nav{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+button,select,input{font:inherit;border:1px solid var(--line);border-radius:11px;padding:11px;background:white;color:var(--ink)}
+button{font-weight:650;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+nav button.active{background:#dbeafe;border-color:#60a5fa}.primary{background:var(--blue);color:white;border-color:var(--blue)}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:17px;padding:16px;margin:12px 0;box-shadow:0 3px 12px #1725540a}
+.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:5px;color:var(--muted);font-size:13px}.field select{width:100%}
+.center{text-align:center}.eyebrow{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.08em}
+.workbox{max-width:310px;margin:12px auto 4px;padding:14px 22px;background:#f8fafc;border:1px solid var(--line);border-radius:13px}
+.carry{min-height:22px;color:var(--red);font:15px ui-monospace,monospace;text-align:right;white-space:pre}
+.stack{font:700 clamp(30px,8vw,42px)/1.28 ui-monospace,SFMono-Regular,Consolas,monospace;text-align:right;white-space:pre}
+.rule{border-top:3px solid var(--ink);margin:5px 0 7px}.result{color:var(--blue);min-height:48px}
+.answerrow{display:flex;gap:8px;margin-top:14px}.answerrow input{min-width:0;flex:1}
+.feedback{min-height:28px;text-align:center;font-weight:700;margin:10px 0 2px}.good{color:var(--green)}.bad{color:var(--red)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.steps{background:var(--soft);border-radius:12px;padding:12px;margin-top:10px;line-height:1.55}.steps p{margin:7px 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;margin-top:12px}.stats strong{font-size:24px;display:block}.stats span{font-size:12px;color:var(--muted)}
+.progress{height:9px;border-radius:20px;background:var(--line);overflow:hidden;margin-top:12px}.bar{height:100%;width:0;background:var(--blue);transition:width .2s}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
+@media(max-width:430px){nav{grid-template-columns:repeat(2,1fr)}.answerrow{flex-direction:column}.settings{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<main>
+<header class="top"><div><h1>🧠 Math Master</h1><div class="sub">Learn it. Practice it. Master it.</div></div><div class="score"><div class="eyebrow">⭐ SCORE</div><strong id="score">0</strong></div></header>
+<nav id="subjects">
+<button class="active" data-sub="multiplication">✖ Multiplication</button><button data-sub="addition">➕ Addition</button><button data-sub="subtraction">➖ Subtraction</button><button data-sub="fractions">½ Fractions</button>
+</nav>
+<section class="card">
+<div class="top"><div><strong id="subjectTitle">Multiplication</strong><div class="sub" id="desc">Solve the problem using columns.</div></div><span class="eyebrow" id="modeLabel">PRACTICE</span></div>
+<div class="settings">
+<label class="field">Difficulty<select id="difficulty"><option value="1">Easy (1–2 digits)</option><option value="2" selected>Medium (2–3 digits)</option><option value="3">Hard (4 digits)</option><option value="4">Expert (5 digits)</option></select></label>
+<label class="field">Mode<select id="mode"><option value="practice">Practice</option><option value="test">10-question test</option></select></label>
+</div>
+<div class="center" style="margin-top:20px"><div class="eyebrow" id="questionNumber">YOUR QUESTION</div><div id="problemText" style="font-size:14px;color:var(--muted);margin-top:5px"></div></div>
+<div class="workbox"><div class="eyebrow center">STACKED PROBLEM</div><div id="carry" class="carry"></div><div id="topNum" class="stack"></div><div id="bottomNum" class="stack"></div><div class="rule"></div><div id="result" class="stack result">?</div></div>
+<div class="answerrow"><input id="answer" inputmode="numeric" autocomplete="off" placeholder="Type your answer"><button id="check" class="primary">Check answer ✓</button></div>
+<div id="feedback" class="feedback" aria-live="polite"></div>
+<div class="actions"><button id="showSteps">Show me how 📚</button><button id="next" class="primary">Next question →</button></div>
+<div id="steps" class="steps" hidden></div>
+</section>
+<section class="card"><strong>📊 Your progress</strong><div class="stats"><div><strong id="correct">0</strong><span>Correct</span></div><div><strong id="wrong">0</strong><span>Incorrect</span></div><div><strong id="percent">0%</strong><span>Accuracy</span></div></div><div class="progress"><div class="bar" id="bar"></div></div><button id="reset" style="width:100%;margin-top:12px">↻ Reset score</button></section>
+<footer>Free to use · No account required · Practice at your own speed</footer>
+</main>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+let subject='multiplication',a=20,b=20,answer=400,score=0,correct=0,wrong=0,q=1,done=false;
+const names={multiplication:'Multiplication',addition:'Addition',subtraction:'Subtraction',fractions:'Fractions'};
+const symbols={multiplication:'×',addition:'+',subtraction:'−',fractions:'+'};
+const fmt=n=>n.toLocaleString('en-US');
+function rand(max){return Math.floor(Math.random()*max)+1}
+function newQuestion(){
+ done=false;$('answer').value='';$('feedback').textContent='';$('feedback').className='feedback';$('steps').hidden=true;$('result').textContent='?';
+ const d=+$('difficulty').value, max=[0,9,99,9999,99999][d];
+ if(subject==='multiplication'){a=rand(max);b=rand(d===1?9:d===2?99:d===3?99:999);answer=a*b}
+ if(subject==='addition'){a=rand(max);b=rand(max);answer=a+b}
+ if(subject==='subtraction'){a=rand(max);b=rand(max);if(b>a)[a,b]=[b,a];answer=a-b}
+ if(subject==='fractions'){a=rand(8)+1;b=rand(8)+1;answer=1}
+ $('subjectTitle').textContent=names[subject];$('desc').textContent=subject==='fractions'?'Multiply and simplify fractions.':'Solve the problem using the written school method.';
+ $('modeLabel').textContent=$('mode').value.toUpperCase();
+ $('questionNumber').textContent=$('mode').value==='test'?`TEST QUESTION ${q} OF 10`:'YOUR QUESTION';
+ $('problemText').textContent=subject==='fractions'?`${a}/${b} × ${b}/${a}`:`${fmt(a)} ${symbols[subject]} ${fmt(b)}`;
+ $('topNum').textContent=fmt(a);$('bottomNum').textContent=symbols[subject]+' '+fmt(b);$('carry').textContent='';
+}
+function makeSteps(){
+ let lines=[];
+ if(subject==='multiplication'){
+  if(b<10){
+   let carry=0,ds=String(a).split('').reverse();
+   ds.forEach((ch,i)=>{let digit=+ch,total=digit*b+carry;lines.push(`Column ${i+1}: ${digit} × ${b} + ${carry} carried = ${total}. Write ${total%10}; carry ${Math.floor(total/10)}.`);carry=Math.floor(total/10)});
+   if(carry)lines.push(`Write the remaining carry ${carry} at the front.`);
+  }else{
+   lines.push(`Multiply ${a} by the ones digit (${b%10}) first.`);
+   lines.push(`Multiply ${a} by the tens digit (${Math.floor(b/10)%10}), then shift that row one place left.`);
+   if(b>=100)lines.push(`Multiply ${a} by the hundreds digit, shifting that row two places left.`);
+   lines.push('Add the partial-product rows to get the final answer.');
+  }
+ }else if(subject==='addition')lines=['Line up the ones, tens, hundreds and thousands columns.','Add from right to left. Carry to the next column whenever a column totals 10 or more.'];
+ else if(subject==='subtraction')lines=['Line up the place-value columns.','Subtract from right to left. If the top digit is smaller, borrow 1 from the next column to the left.'];
+ else lines=[`Multiply the numerators: ${a} × ${b} = ${a*b}.`,`Multiply the denominators: ${b} × ${a} = ${b*a}.`,`Simplify ${a*b}/${b*a} to 1.`];
+ $('steps').innerHTML='<strong>Step-by-step method</strong>'+lines.map((s,i)=>`<p>${i+1}. ${s}</p>`).join('')+`<p><strong>Answer: ${fmt(answer)}</strong></p>`;
+ $('steps').hidden=false;
+}
+function update(){
+ $('score').textContent=score;$('correct').textContent=correct;$('wrong').textContent=wrong;
+ let pct=correct+wrong?Math.round(correct/(correct+wrong)*100):0;$('percent').textContent=pct+'%';$('bar').style.width=pct+'%';
+}
+function check(){
+ if(done)return;if($('answer').value.trim()===''){$('feedback').textContent='Type an answer first!';return}
+ done=true;
+ if(Number($('answer').value)===answer){correct++;score+=10;$('feedback').textContent='🎉 Correct! Great job!';$('feedback').classList.add('good')}
+ else{wrong++;$('feedback').textContent='Not quite! The answer is '+fmt(answer)+'.';$('feedback').classList.add('bad')}
+ $('result').textContent=fmt(answer);update();makeSteps();
+ if($('mode').value==='test'&&q===10)$('feedback').textContent+=' Test complete!';
+}
+document.querySelectorAll('[data-sub]').forEach(btn=>btn.addEventListener('click',()=>{subject=btn.dataset.sub;document.querySelectorAll('[data-sub]').forEach(x=>x.classList.toggle('active',x===btn));q=1;newQuestion()}));
+$('check').addEventListener('click',check);$('answer').addEventListener('keydown',e=>{if(e.key==='Enter')check()});
+$('showSteps').addEventListener('click',makeSteps);
+$('next').addEventListener('click',()=>{if($('mode').value==='test'&&q===10){q=1;correct=0;wrong=0;score=0;update()}else q++;newQuestion()});
+$('difficulty').addEventListener('change',newQuestion);$('mode').addEventListener('change',()=>{q=1;newQuestion()});
+$('reset').addEventListener('click',()=>{score=correct=wrong=0;q=1;update();newQuestion()});
+newQuestion();update();
+})();
+</script>
+</body></html>
